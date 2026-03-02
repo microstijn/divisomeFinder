@@ -15,7 +15,16 @@ function parse_essential_genes(tradis_csv_path::String)
     df = CSV.read(tradis_csv_path, DataFrame, missingstring=["", "NA"])
     essential_df = filter(row -> !ismissing(row.Essentiality) &&
                                 (row.Essentiality == "essential" || row.Essentiality == "essential#"), df)
-    return Set(essential_df.Locus_tag)
+
+    # Ensure locus tags are converted to a strict Set{String}
+    essential_loci = Set{String}()
+    for locus in essential_df.Locus_tag
+        if !ismissing(locus)
+            push!(essential_loci, String(locus))
+        end
+    end
+
+    return essential_loci
 end
 
 """
