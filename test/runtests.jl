@@ -1,10 +1,10 @@
 using Test
 
-include("../src/DivisomeHunter.jl")
+include("../src/divisomeFinder.jl")
 
-using .DivisomeHunter
-using .DivisomeHunter.Types
-using .DivisomeHunter.Classifier
+using .divisomeFinder
+using .divisomeFinder.Types
+using .divisomeFinder.Classifier
 
 @testset "DivisomeHunter Tests" begin
     @testset "Types" begin
@@ -13,11 +13,11 @@ using .DivisomeHunter.Classifier
         @test criteria.scaffold_min_mass_kda == 70.0
         @test criteria.motor_min_mass_kda == 35.0
         @test criteria.motor_max_mass_kda == 65.0
-
+        
         # Test custom initialization
         custom_criteria = Types.DivisomeCriteria(scaffold_min_mass_kda=100.0)
         @test custom_criteria.scaffold_min_mass_kda == 100.0
-
+        
         # Test ProteinCandidate struct
         candidate = Types.ProteinCandidate(
             locus_tag="Gene_01",
@@ -36,7 +36,7 @@ using .DivisomeHunter.Classifier
 
     @testset "Classifier Logic" begin
         criteria = Types.DivisomeCriteria()
-
+        
         # 1. Valid Scaffold
         @test Classifier.evaluate_candidate(
             120.0, true, false, "ig-like, invasin", "Some Protein", criteria

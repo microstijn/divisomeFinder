@@ -89,11 +89,11 @@ Returns "Scaffold", "Motor", or "None".
 function evaluate_candidate(mass_kda::Float64, is_membrane::Bool, has_signal::Bool, domain_str::String, name::String, criteria::Any)
     domain_str_lower = lowercase(domain_str)
     name_lower = lowercase(name)
-
-    is_scaffold = any(kw -> occursin(kw, domain_str_lower) || occursin(kw, name_lower), criteria.scaffold_keywords) &&
+    
+    is_scaffold = any(kw -> occursin(kw, domain_str_lower) || occursin(kw, name_lower), criteria.scaffold_keywords) && 
                   (mass_kda >= criteria.scaffold_min_mass_kda) && (is_membrane || has_signal)
-
-    is_motor = any(kw -> occursin(kw, domain_str_lower) || occursin(kw, name_lower), criteria.motor_keywords) &&
+                  
+    is_motor = any(kw -> occursin(kw, domain_str_lower) || occursin(kw, name_lower), criteria.motor_keywords) && 
                (criteria.motor_min_mass_kda <= mass_kda <= criteria.motor_max_mass_kda)
 
     return is_scaffold ? "Scaffold" : (is_motor ? "Motor" : "None")
@@ -107,14 +107,14 @@ and evaluates each entry against the defined criteria. Returns a vector of valid
 """
 function classify_candidates(json_data, locus_to_acc::Dict{String, String}, criteria::Any)
     records = Types.ProteinCandidate[]
-
+    
     isnothing(json_data) && return records
     !haskey(json_data, :results) && return records
 
     for item in json_data.results
         entry = get(item, :to, nothing)
         isnothing(entry) && continue
-
+        
         acc = String(item.from)
         locus_tag = get(locus_to_acc, acc, "Unknown")
 
@@ -130,7 +130,7 @@ function classify_candidates(json_data, locus_to_acc::Dict{String, String}, crit
 
         # InterPro Domains
         domain_str = extract_interpro_domains(entry)
-
+        
         # Classification Logic
         candidate_type = evaluate_candidate(mass_kda, is_membrane, has_signal, domain_str, name, criteria)
 
@@ -148,10 +148,10 @@ function classify_candidates(json_data, locus_to_acc::Dict{String, String}, crit
             ))
         end
     end
-
+    
     # Sort for best presentation: Scaffolds first, then Motors, ordered by Mass
     sort!(records, by = x -> (x.candidate_type, x.mass_kda), rev=true)
-
+    
     return records
 end
 
