@@ -5,7 +5,7 @@ export fetch_uniprot_data
 using ..AccessionMapper
 
 """
-    fetch_uniprot_data(accessions::Vector{String})
+    fetch_uniprot_data(accessions::Vector{String}; from_db::String="UniProtKB_AC-ID")
 
 Fetches a stream of UniProt JSON data for a given list of accessions.
 This uses the custom `AccessionMapper` functions under the hood.
@@ -18,7 +18,7 @@ This uses the custom `AccessionMapper` functions under the hood.
 # Returns
 - A `JSON3.Object` containing the raw results.
 """
-function fetch_uniprot_data(accessions::Vector{String})
+function fetch_uniprot_data(accessions::Vector{String}; from_db::String="UniProtKB_AC-ID")
     # Make sure we remove duplicates
     unique_accs = unique(accessions)
 
@@ -27,8 +27,8 @@ function fetch_uniprot_data(accessions::Vector{String})
         return nothing
     end
 
-    println("🚀 Submitting job to UniProt for $(length(unique_accs)) accessions...")
-    job_id = AccessionMapper.submit_job(unique_accs, "UniProtKB_AC-ID", "UniProtKB")
+    println("🚀 Submitting job to UniProt for $(length(unique_accs)) accessions (from_db=$from_db)...")
+    job_id = AccessionMapper.submit_job(unique_accs, from_db, "UniProtKB")
 
     results_url = ""
     try

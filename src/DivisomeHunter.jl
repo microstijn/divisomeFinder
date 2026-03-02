@@ -17,7 +17,7 @@ using .UniProtAPI
 using .Classifier
 
 """
-    hunt_divisome(tradis_csv_path::String, fasta_path::String; criteria::Any=DivisomeCriteria()) -> Tuple{Vector{ProteinCandidate}, DataFrame}
+    hunt_divisome(tradis_csv_path::String, fasta_path::String; criteria::Any=DivisomeCriteria(), from_db::String="UniProtKB_AC-ID") -> Tuple{Vector{ProteinCandidate}, DataFrame}
 
 Main entry point for DivisomeHunter.jl. Automates the discovery of novel cell division machinery
 candidates in non-canonical bacteria by applying rigid biophysical and structural filters
@@ -28,6 +28,8 @@ to essential genes defined by TraDIS.
 - `fasta_path::String`: Path to the Proteome FASTA file mapping locus tags to UniProt Accessions.
 - `criteria::Any`: Optional configuration struct defining the bounds of the search
   (mass thresholds, keywords). Defaults to `DivisomeCriteria()`.
+- `from_db::String`: Optional UniProt mapping database source. Defaults to `"UniProtKB_AC-ID"`.
+  If parsing GenBank/RefSeq FASTA files with `[protein_id=...]`, use `"EMBL-GenBank-DDBJ_CDS"`.
 
 # Returns
 - A tuple containing:
@@ -40,7 +42,7 @@ to essential genes defined by TraDIS.
 3.  Utilizes the UniProt REST API (asynchronously) to download massive GZIP-compressed metadata entries for the candidates.
 4.  Applies the `DivisomeCriteria` filters to evaluate each candidate based on mass, sequence length, topology, and InterPro domains.
 """
-function hunt_divisome(tradis_csv_path::String, fasta_path::String; criteria::Any=DivisomeCriteria())
+function hunt_divisome(tradis_csv_path::String, fasta_path::String; criteria::Any=DivisomeCriteria(), from_db::String="UniProtKB_AC-ID")
     # 1. Parse essential genes
     println("🧬 Step 1: Parsing Essential Locus Tags...")
     essential_loci = DataParser.parse_essential_genes(tradis_csv_path)
@@ -53,7 +55,7 @@ function hunt_divisome(tradis_csv_path::String, fasta_path::String; criteria::An
 
     # 3. Fetch UniProt JSON Data
     println("\n🧬 Step 3: Fetching Data from UniProt...")
-    json_data = UniProtAPI.fetch_uniprot_data(accessions)
+    json_data = UniProtAPI.fetch_uniprot_data(accessions; from_db=from_db)
 
     # 4. Parse JSON and Classify
     println("\n🧬 Step 4: Classifying Candidates based on Criteria...")
